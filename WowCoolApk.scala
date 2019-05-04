@@ -89,7 +89,7 @@ object WowCoolApk {
       case List("!") => note(getCoolToken())
       case List(uuid) => note(getCoolToken(uuid = uuid))
       case List(uuid, date) => note(getCoolToken(timeAt = parseDate(date), uuid = uuid))
-      case List(uuid, date, apk) => note(getCoolToken(parseDate(date), apk, uuid))
+      case List(uuid, date, apk) => note(getCoolToken(apk, parseDate(date), uuid))
       case _ => {
         eprintln(s"Bad arity (flags = $flags)")
         eprintln(s"Unknown command `${args.mkString(" ")}`; use $NAME help to show help")
