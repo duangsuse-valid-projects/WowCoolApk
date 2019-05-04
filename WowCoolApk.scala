@@ -42,7 +42,7 @@ object WowCoolApk {
     return toMd5String(ut_repr.getBytes())
   }
 
-  def getCoolToken(timeAt: Date = new Date, apk: String = PACKAGE, uuid: String = DEFAULT_DEVICE_UUID):
+  def getCoolToken(apk: String = PACKAGE, timeAt: Date = new Date, uuid: String = DEFAULT_DEVICE_UUID):
   String = {
     val verb = mkVerb(flags)
     verb(s"Token=$TOKEN; uuid=$uuid; apk=$apk")
