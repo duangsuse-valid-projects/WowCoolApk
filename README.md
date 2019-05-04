@@ -21,6 +21,7 @@
 另外也提醒了我们，用 C 写，编译成机器码，也未必就是所谓的『完全黑盒』了。
 
 ```http
+X-Requested-With: XMLHttpRequest
 X-Sdk-Int: 25
 X-Sdk-Locale: zh-CN
 X-App-Id: com.coolapk.market
@@ -102,6 +103,24 @@ Type :help for more information.
 
 scala> WowCoolApk.getCoolToken("com.coolapk.market", new Date, "|uuid|")
 res0: String = 555a63b38d01e2c6d02191e2caa927fa|uuid|0x5ccdbe03
+```
+
+## Implementation
+
+```scala
+def getCoolToken(apk: String = PACKAGE, timeAt: Date = new Date, uuid: String = DEFAULT_DEVICE_UUID):
+  String = {
+  val timestamp = timeAt.getTime() / 1000
+  val salt = TOKEN + timestampMd5(timestamp) + "$" + uuid + "&" + apk
+ 
+  val stringBytes = (s: String) => s.getBytes()
+  val toBase64AndMD5Digest = toMd5String _ compose stringBytes compose toBase64
+
+  val salt_b64_md5 = toBase64AndMD5Digest(salt.getBytes())
+
+  val utime_hex = "0x%x".format(timestamp)
+  return salt_b64_md5 + uuid + utime_hex
+}
 ```
   
 ## See also
