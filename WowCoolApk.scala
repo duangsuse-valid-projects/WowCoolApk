@@ -56,7 +56,7 @@ object WowCoolApk {
     val salt_b64_md5 = toBase64AndMD5Digest(salt.getBytes())
     verb(s"toBase64AndThenMD5Digest: $salt_b64_md5")
 
-    val utime_hex = "0x%x".format(timestamp); verb("Hex time: $utime_hex")
+    val utime_hex = "0x%x".format(timestamp); verb(s"Hex time: $utime_hex")
     return salt_b64_md5 + uuid + utime_hex;
   }
 
@@ -112,8 +112,8 @@ object WowCoolApk {
       wn("<uuid> <date>")
       wn("<uuid> <date> <apk>")
       wn("<flag: _ or q or v> rest... [! to use defaults]")
-      wn(s"<get gen> generate one with default options:\n" +
-          " 0*-0*-0*-0*-0* as UUID,\n $PACKAGE as market,\n current time as time")
+      wn("<get gen> generate one with default options:\n" +
+          s" 0*-0*-0*-0*-0* as UUID,\n $PACKAGE as market,\n current time as time")
     }
     case "_" :: xs => cmd(xs, "")
     case "q" :: xs => cmd(xs, "q")
