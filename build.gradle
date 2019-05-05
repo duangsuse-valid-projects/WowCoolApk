@@ -1,0 +1,57 @@
+apply plugin: 'scala'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+buildscript {
+  repositories {
+    flatDir dirs: System.getProperty("user.home") + '/bin/proguard6.0.3/lib/'
+    jcenter()
+  }
+
+  dependencies {
+    classpath ':proguard'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:5.+'
+  }
+}
+
+ext.mainClassName = rootProject.name
+ext.version = '1.1'
+ext.jarName = "${name}-bin"
+
+allprojects {
+  repositories {
+    jcenter()
+  }
+}
+
+jar {
+  manifest{
+    attributes 'Main-Class': mainClassName
+  }
+}
+
+shadowJar {
+  baseName = rootProject.name
+  classifier = 'bin'
+  version = version
+}
+
+dependencies {
+  implementation "org.scala-lang:scala-library:2.11.+"
+  testImplementation "org.scalatest:scalatest_2.11:3.+"
+}
+
+task proguard(type: proguard.gradle.ProGuardTask) {
+  injars "./build/libs/${jarName}.jar"
+  outjars "./build/libs/${jarName}-mini.jar"
+  libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+
+  dontwarn
+  dontnote
+  ignorewarnings
+
+  keepattributes 'SourceFile,LineNumberTable'
+
+  keepclasseswithmembers 'public class * { \
+    public static void main(java.lang.String[]); \
+  }'
+}
