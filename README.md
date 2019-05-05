@@ -83,26 +83,76 @@ WowCoolApk <get gen> generate one with default options:
 + WowCoolApk \[uuid\] \[date\] \[apk\]: Generate with options override
 + WowCoolApk \[qv\_\] \[!\]: Generate with flags (q -> be quiet, v -> be verbose) 
 + WowCoolApk \[qv\_\]\[uuid\] \[date\] \[apk\]: Generate with flags and options override
-  
+
+## WowCoolApk "WoW" Template (`GET` Query only) Client
+
++ WowCoolApk r <URL> \[-a -auth Cookie set\] \[-ac -accept Accept\] \[parameters\] : Get raw data
++ WowCoolApk rj <URL> \[-a -auth Cookie set\] \[-ac -accept Accept\]  \[parameters\] : Get pretty JSON data
+
+w: `wow` or `w`
+
++ WowCoolApk w <URL Template> <Display string> \[-a -auth Cookie set\] \[-ac -accept Accept\]  \[Query or path parameters\]
+
+Run wow client
+
+URL Template like:
+
+```
+/foo/bar
+/{arg}/name: with a path parameter named arg
+/setAsAdmin?uid: with a query parameter named uid
+/setName?uid&name: with query parameter uid and name
+/setBio?uid&bio=Noting (: with query parameter uid and bio, bio default value is "Nothing (:"
+/{arg}/name?uid=1
+...
+```
+
+Display string like:
+
+```
+Name: {$.appName}<<Version: {$['app_version']}<<Author: {$.author.name}
+
+<<: newline
+```
+
+Simple JSON Path language:
+
+```
+$: root object
+$.name: index object with simplename
+$['name'] index object with string name
+$['a'][0] index array with number index
+$.0.1: $[0][1]
+$.a.b: $['a']['b']
+
+
+Result VALUE maybe Map(object)/List(array)/String/Double/Boolean/null
+```
+
+"Wow" template client is Not supported yet
+
 ## Scala library
 
 ```scala
-$ scala -i WowCoolApk.scala 
-Loading WowCoolApk.scala...
+//$ scala -i WowCoolApk.scala 
+//Loading WowCoolApk.scala...
 import java.util.Base64
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.text.ParseException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
-defined module WowCoolApk
+//defined module WowCoolApk
 
-Welcome to Scala version 2.10.6 (OpenJDK 64-Bit Server VM, Java 1.8.0_201).
-Type in expressions to have them evaluated.
-Type :help for more information.
+//Welcome to Scala version 2.10.6 (OpenJDK 64-Bit Server VM, Java 1.8.0_201).
+//Type in expressions to have them evaluated.
+//Type :help for more information.
 
-scala> WowCoolApk.getCoolToken("com.coolapk.market", new Date, "|uuid|")
-res0: String = 555a63b38d01e2c6d02191e2caa927fa|uuid|0x5ccdbe03
+WowCoolApk.getCoolToken("com.coolapk.market", new Date, "|uuid|")
+val res0: String = "555a63b38d01e2c6d02191e2caa927fa|uuid|0x5ccdbe03"
+
+// new version
+getCoolToken(apk = PACKAGE, timeAt = new Date, uuid = Some(DEFAULT_DEVICE_UUID))
 ```
 
 ## Implementation

@@ -37,6 +37,8 @@ shadowJar {
 
 dependencies {
   implementation "org.scala-lang:scala-library:2.11.+"
+  implementation "com.github.kevinsawicki:http-request:6.+"
+  implementation "com.eclipsesource.minimal-json:minimal-json:0.9.+"
   testImplementation "org.scalatest:scalatest_2.11:3.+"
 }
 
