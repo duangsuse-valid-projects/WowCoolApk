@@ -13,8 +13,10 @@ buildscript {
   }
 }
 
+import proguard.gradle.ProGuardTask
+
 ext.mainClassName = rootProject.name
-ext.version = '1.1'
+ext.version = '1.1.1'
 ext.jarName = "${name}-bin"
 
 allprojects {
@@ -24,14 +26,12 @@ allprojects {
 }
 
 jar {
-  manifest{
-    attributes 'Main-Class': mainClassName
-  }
+  manifest.attributes 'Main-Class': mainClassName
 }
 
 shadowJar {
-  baseName = rootProject.name
   classifier = 'bin'
+  archiveName = rootProject.name
   version = version
 }
 
@@ -40,18 +40,22 @@ dependencies {
   testImplementation "org.scalatest:scalatest_2.11:3.+"
 }
 
-task proguard(type: proguard.gradle.ProGuardTask) {
-  injars "./build/libs/${jarName}.jar"
-  outjars "./build/libs/${jarName}-mini.jar"
-  libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+task proguard(type: ProGuardTask) {
+  injars "./build/libs/${jarName}.jar".intern()
+  outjars "./build/libs/${jarName}-mini.jar".intern()
+  libraryjars "${System.getProperty('java.home')}/lib/rt.jar".intern()
 
   dontwarn
   dontnote
   ignorewarnings
 
-  keepattributes 'SourceFile,LineNumberTable'
+  keepattributes 'SourceFile, LineNumberTable'
 
   keepclasseswithmembers 'public class * { \
     public static void main(java.lang.String[]); \
   }'
+}
+
+task debugInfoProguard(type: ProGuardTask) {
+  proguard.doFirst { dontobfuscate }
 }

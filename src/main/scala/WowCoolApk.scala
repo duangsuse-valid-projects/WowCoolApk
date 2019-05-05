@@ -63,10 +63,11 @@ object WowCoolApk {
    */
   def getCoolToken(apk: String = PACKAGE, timeAt: Date = new Date, uuid: Option[UUID] = Some(DEFAULT_DEVICE_UUID)):
   String = {
+    val uuid_ = uuid.getOrElse(DEFAULT_DEVICE_UUID).toString
     val verb = mkVerb(flags)
     verb(s"Token=$TOKEN; uuid=$uuid; apk=$apk")
     val timestamp = timeAt.getTime() / 1000; verb(s"TimeStamp: $timestamp")
-    val salt = TOKEN + timestampMd5(timestamp) + "$" + uuid + "&" + apk
+    val salt = TOKEN + timestampMd5(timestamp) + "$" + uuid_ + "&" + apk
     verb(s"Salt: $salt")
 
     val stringBytes = (s: String) => s.getBytes()
@@ -76,7 +77,7 @@ object WowCoolApk {
     verb(s"toBase64AndThenMD5Digest: $salt_b64_md5")
 
     val utime_hex = "0x%x".format(timestamp); verb(s"Hex time: $utime_hex")
-    return salt_b64_md5 + uuid.getOrElse(DEFAULT_DEVICE_UUID).toString + utime_hex;
+    return salt_b64_md5 + uuid_ + utime_hex;
   }
 
   def noisyS(f : (String) => Unit) = (p : Boolean, msg : String) => if (p) f(msg)
