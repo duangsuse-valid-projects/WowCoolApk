@@ -103,6 +103,21 @@ object WowCoolApk {
 
   def tryParseUUID(str : String): Option[UUID] = try { return Some(UUID.fromString(str)) } catch { case _: IllegalArgumentException => None }
 
+  /**
+    * URL \[-a -auth Cookie set\] \[-ac -accept Accept\] \[parameters\]
+    *
+    * @param args command line args
+    * @param json should I print as json?
+    */
+  def wowReadCmdline(args: List[String], json: Boolean): Unit = args match {
+    case url :: ("-a" | "-auth") :: cookies :: ("-ac" | "-accept") :: accept :: ps => {}
+    case url :: ("-a" | "-auth") :: cookies :: ps => {}
+    case url :: ("-ac" | "-accept") :: accept :: ps => {}
+    case url :: ps => {}
+    case url => {}
+    case Nil => emerg(flags)("Usage: <URL> [-a -auth Cookie set] [-ac -accept Accept] [parameters]")
+  }
+
   def cmd(args : List[String], flag: String): Unit
   = {
     this.flags = flag
@@ -140,6 +155,8 @@ object WowCoolApk {
     case "_" :: xs => cmd(xs, "")
     case "q" :: xs => cmd(xs, "q")
     case "v" :: xs => cmd(xs, "v")
+    case "r" :: xs => wowReadCmdline(xs, json = false)
+    case "rj" :: xs => wowReadCmdline(xs, json = true)
     case xs => cmd(xs, "")
   }
 }
