@@ -1,5 +1,6 @@
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -9,15 +10,19 @@ import java.security.NoSuchAlgorithmException;
 
 object WowCoolApk {
   val TOKEN = "token://com.coolapk.market/c67ef5943784d09750dcfbb31020f0ab?";
-  val DEFAULT_DEVICE_UUID = "00000000-0000-0000-0000-000000000000";
+  lazy val DEFAULT_DEVICE_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
   val PACKAGE = "com.coolapk.market";
-  lazy val md5Digest = MessageDigest.getInstance("MD5"); // unchecked
-  lazy val dateFmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+
+  lazy val MD5 = MessageDigest.getInstance("MD5"); // unchecked
+  lazy val DATE = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 
   val NAME = "WowCoolApk"
   var flags: String = ""
 
-  // bytes -> 7f454c46...
+  /**
+   * Given a array of Byte, return join result of format %02x<p>
+   * bytes -> 7f454c46...
+   */
   def bytesToHexString(bs : Array[Byte]):
   String = {
     val sb = new StringBuilder
@@ -25,24 +30,38 @@ object WowCoolApk {
     return sb.toString()
   }
 
+  /**
+   * Given a array of Byte (to compute md5sum)<p>
+   * Return hexdigest of this byteary
+   */
   def toMd5String(dat : Array[Byte]):
   String = {
-    val bytes = md5Digest.digest(dat)
+    val bytes = MD5.digest(dat)
     return bytesToHexString(bytes)
   }
 
+  /**
+   * Encode bytebuffer to String with Base64
+   */
   def toBase64(dat : Array[Byte]):
   String = {
     return new String(Base64.getEncoder().encode(dat))
   }
 
+  /**
+   * Get CoolApk's timestamp MD5 hexdigest string (digest for String.valueof(unixTime))
+   */
   def timestampMd5(unixTime: Long):
   String = {
     val ut_repr = String.valueOf(unixTime)
     return toMd5String(ut_repr.getBytes())
   }
 
-  def getCoolToken(apk: String = PACKAGE, timeAt: Date = new Date, uuid: String = DEFAULT_DEVICE_UUID):
+  /**
+   * Generate api.CoolApk.com token with X-App-Id, generation time, Device UUID information
+   * <p> if uuid is None, then use  default value (in parameter list)
+   */
+  def getCoolToken(apk: String = PACKAGE, timeAt: Date = new Date, uuid: Option[UUID] = Some(DEFAULT_DEVICE_UUID)):
   String = {
     val verb = mkVerb(flags)
     verb(s"Token=$TOKEN; uuid=$uuid; apk=$apk")
@@ -57,7 +76,7 @@ object WowCoolApk {
     verb(s"toBase64AndThenMD5Digest: $salt_b64_md5")
 
     val utime_hex = "0x%x".format(timestamp); verb(s"Hex time: $utime_hex")
-    return salt_b64_md5 + uuid + utime_hex;
+    return salt_b64_md5 + uuid.getOrElse(DEFAULT_DEVICE_UUID).toString + utime_hex;
   }
 
   def noisyS(f : (String) => Unit) = (p : Boolean, msg : String) => if (p) f(msg)
@@ -73,7 +92,7 @@ object WowCoolApk {
 
   val _parse_failed = (str: String) => { emerg(flags)(s"Failed to parse date `$str`"); new Date }
   def parseDate(str : String): Date = try {
-    dateFmt.parse(str) match {
+    DATE.parse(str) match {
       case null => _parse_failed(str)
       case date => return date
     }
@@ -81,15 +100,17 @@ object WowCoolApk {
     case ex: ParseException => _parse_failed(str)
   }
 
+  def tryParseUUID(str : String): Option[UUID] = try { return Some(UUID.fromString(str)) } catch { case _: IllegalArgumentException => None }
+
   def cmd(args : List[String], flag: String): Unit
   = {
     this.flags = flag
     val note = mkNote(flags)
     args match {
       case List("!") => note(getCoolToken())
-      case List(uuid) => note(getCoolToken(uuid = uuid))
-      case List(uuid, date) => note(getCoolToken(timeAt = parseDate(date), uuid = uuid))
-      case List(uuid, date, apk) => note(getCoolToken(apk, parseDate(date), uuid))
+      case List(uuid) => note(getCoolToken(uuid = tryParseUUID(uuid)))
+      case List(uuid, date) => note(getCoolToken(timeAt = parseDate(date), uuid = tryParseUUID(uuid)))
+      case List(uuid, date, apk) => note(getCoolToken(apk, parseDate(date), tryParseUUID(uuid)))
       case _ => {
         eprintln(s"Bad arity (flags = $flags)")
         eprintln(s"Unknown command `${args.mkString(" ")}`; use $NAME help to show help")
